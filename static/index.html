@@ -5,15 +5,55 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PackSmart | Your Trip Organizer</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        indigo: {
+                            50: 'rgb(var(--p-50) / <alpha-value>)',
+                            100: 'rgb(var(--p-100) / <alpha-value>)',
+                            200: 'rgb(var(--p-200) / <alpha-value>)',
+                            300: 'rgb(var(--p-300) / <alpha-value>)',
+                            400: 'rgb(var(--p-400) / <alpha-value>)',
+                            500: 'rgb(var(--p-500) / <alpha-value>)',
+                            600: 'rgb(var(--p-600) / <alpha-value>)',
+                            700: 'rgb(var(--p-700) / <alpha-value>)',
+                            800: 'rgb(var(--p-800) / <alpha-value>)',
+                            900: 'rgb(var(--p-900) / <alpha-value>)',
+                            950: 'rgb(var(--p-950) / <alpha-value>)',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         [v-cloak] { display: none; }
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f1f5f9; }
+        :root {
+            --p-50: 238 242 255;
+            --p-100: 224 231 255;
+            --p-200: 199 210 254;
+            --p-300: 165 180 252;
+            --p-400: 129 140 248;
+            --p-500: 99 102 241;
+            --p-600: 79 70 229;
+            --p-700: 67 56 202;
+            --p-800: 55 48 163;
+            --p-900: 49 46 129;
+            --p-950: 30 27 75;
+            --p-gradient: linear-gradient(135deg, rgb(var(--p-600)) 0%, rgb(var(--p-400)) 100%);
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-sidebar: #0f172a;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-main); color: #f1f5f9; transition: background-color 0.5s ease; }
         h1, h2, h3, button, .font-heading { font-family: 'Outfit', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
+        .gradient-bg { background: var(--p-gradient); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
@@ -25,12 +65,12 @@
             top: 50%;
             transform: translateY(-50%);
         }
-        .dark-card { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .sidebar-item-active { background: rgba(99, 102, 241, 0.1); color: #818cf8; border-right: 3px solid #6366f1; }
+        .dark-card { background: var(--bg-card); border: 1px solid rgba(255, 255, 255, 0.05); transition: background-color 0.5s ease; }
+        .sidebar-item-active { background: rgb(var(--p-600) / 0.1); color: rgb(var(--p-400)); border-right: 3px solid rgb(var(--p-600)); }
         .custom-scrollbar::-webkit-scrollbar { height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(99, 102, 241, 0.3); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(99, 102, 241, 0.5); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgb(var(--p-600) / 0.3); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgb(var(--p-600) / 0.5); }
     </style>
 </head>
 <body class="min-h-screen selection:bg-indigo-500/30 selection:text-indigo-200">
@@ -70,7 +110,7 @@
 
         <template v-if="user">
             <!-- Sidebar Navigation -->
-            <aside class="fixed left-0 top-0 bottom-0 w-20 md:w-64 bg-slate-900 border-r border-slate-800 z-40 flex flex-col items-center md:items-stretch transition-all duration-300">
+            <aside :style="{ backgroundColor: 'var(--bg-sidebar)' }" class="fixed left-0 top-0 bottom-0 w-20 md:w-64 border-r border-slate-800 z-40 flex flex-col items-center md:items-stretch transition-all duration-300">
                 <div class="p-6 flex items-center space-x-3 mb-8">
                     <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20 shrink-0">
                         <i class="fa-solid fa-suitcase-rolling"></i>
@@ -89,10 +129,34 @@
                 </nav>
 
                 <div class="p-4 border-t border-slate-800">
-                    <div class="bg-slate-800/50 p-4 rounded-2xl flex items-center justify-between md:justify-start md:space-x-3">
-                        <div class="w-10 h-10 rounded-full bg-slate-700 shadow-sm flex items-center justify-center text-indigo-400 font-black text-xs shrink-0">
+                    <div class="bg-slate-800/50 p-4 rounded-2xl flex items-center justify-between md:justify-start md:space-x-3 relative">
+                        <div @click="showThemePicker = !showThemePicker" class="w-10 h-10 rounded-full bg-slate-700 shadow-sm flex items-center justify-center text-indigo-400 font-black text-xs shrink-0 cursor-pointer hover:ring-2 hover:ring-indigo-500 transition-all relative group">
                             {{ user.username.charAt(0).toUpperCase() }}
+                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-slate-900 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-palette text-[8px] text-white"></i>
+                            </div>
                         </div>
+
+                        <!-- Theme Picker Popover -->
+                        <div v-if="showThemePicker" class="absolute bottom-full left-4 mb-4 bg-slate-900 border border-slate-800 p-4 rounded-3xl shadow-2xl z-50 w-56 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Select Theme</h4>
+                                <button @click="showThemePicker = false" class="text-slate-600 hover:text-white transition">
+                                    <i class="fa-solid fa-times text-[10px]"></i>
+                                </button>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3">
+                                <button v-for="t in themes" 
+                                        :key="t.name" 
+                                        @click="setTheme(t)"
+                                        class="group flex flex-col items-center space-y-1.5 p-2 rounded-xl transition hover:bg-slate-800">
+                                    <div class="w-8 h-8 rounded-full shadow-lg transition group-hover:scale-110" 
+                                         :style="{ backgroundColor: t.color, border: currentTheme?.name === t.name ? '3px solid white' : 'none' }"></div>
+                                    <span class="text-[8px] font-black uppercase tracking-tighter" :class="currentTheme?.name === t.name ? 'text-indigo-400' : 'text-slate-600'">{{ t.name }}</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="hidden md:block flex-grow min-w-0">
                             <p class="text-xs font-black text-white truncate uppercase tracking-tighter">{{ user.username }}</p>
                             <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Organizer</p>
@@ -652,7 +716,17 @@
                     newCategoryName: '',
                     newActivityName: '',
                     activityLinks: {},
-                    ratingFilter: 0
+                    ratingFilter: 0,
+                    showThemePicker: false,
+                    themes: [
+                        { name: 'Indigo', color: '#6366f1', bg: '#0f172a', sidebar: '#0f172a', card: '#1e293b', colors: { 50: '238 242 255', 100: '224 231 255', 200: '199 210 254', 300: '165 180 252', 400: '129 140 248', 500: '99 102 241', 600: '79 70 229', 700: '67 56 202', 800: '55 48 163', 900: '49 46 129', 950: '30 27 75' } },
+                        { name: 'Emerald', color: '#10b981', bg: '#061d15', sidebar: '#04150f', card: '#0a2d20', colors: { 50: '236 253 245', 100: '209 250 229', 200: '167 243 208', 300: '110 231 183', 400: '52 211 153', 500: '16 185 129', 600: '5 150 105', 700: '4 120 87', 800: '6 95 70', 900: '6 78 59', 950: '2 44 34' } },
+                        { name: 'Rose', color: '#f43f5e', bg: '#1a0a0c', sidebar: '#120708', card: '#251012', colors: { 50: '255 241 242', 100: '255 228 230', 200: '254 205 211', 300: '253 164 175', 400: '251 113 133', 500: '244 63 94', 600: '225 29 72', 700: '190 18 60', 800: '159 18 57', 900: '136 19 55', 950: '76 5 25' } },
+                        { name: 'Amber', color: '#f59e0b', bg: '#1a1205', sidebar: '#120d04', card: '#251a07', colors: { 50: '255 251 235', 100: '254 243 199', 200: '253 230 138', 300: '252 211 77', 400: '251 191 36', 500: '245 158 11', 600: '217 119 6', 700: '180 83 9', 800: '146 64 14', 900: '120 53 15', 950: '69 26 3' } },
+                        { name: 'Sky', color: '#0ea5e9', bg: '#051624', sidebar: '#030f1a', card: '#0a2235', colors: { 50: '240 249 255', 100: '224 242 254', 200: '186 230 253', 300: '125 211 252', 400: '56 189 248', 500: '14 165 233', 600: '2 132 199', 700: '3 105 161', 800: '7 89 133', 900: '12 74 110', 950: '8 47 71' } },
+                        { name: 'Violet', color: '#8b5cf6', bg: '#12091d', sidebar: '#0c0614', card: '#1a0e2a', colors: { 50: '245 243 255', 100: '237 233 254', 200: '221 214 254', 300: '196 181 253', 400: '167 139 250', 500: '139 92 246', 600: '124 58 237', 700: '109 40 217', 800: '91 33 182', 900: '76 29 149', 950: '46 16 101' } }
+                    ],
+                    currentTheme: null
                 }
             },
             computed: {
@@ -690,9 +764,29 @@
                 }
             },
             mounted() {
+                const savedTheme = localStorage.getItem('packsmart_theme');
+                if (savedTheme) {
+                    const theme = this.themes.find(t => t.name === savedTheme);
+                    if (theme) this.setTheme(theme);
+                    else this.setTheme(this.themes[0]);
+                } else {
+                    this.setTheme(this.themes[0]);
+                }
                 if (this.user) this.fetchData();
             },
             methods: {
+                setTheme(theme) {
+                    this.currentTheme = theme;
+                    localStorage.setItem('packsmart_theme', theme.name);
+                    const root = document.documentElement;
+                    Object.entries(theme.colors).forEach(([level, value]) => {
+                        root.style.setProperty(`--p-${level}`, value);
+                    });
+                    root.style.setProperty('--bg-main', theme.bg);
+                    root.style.setProperty('--bg-sidebar', theme.sidebar);
+                    root.style.setProperty('--bg-card', theme.card);
+                    this.showThemePicker = false;
+                },
                 async handleAuth() {
                     const endpoint = this.isLogin ? '/login' : '/signup';
                     try {
