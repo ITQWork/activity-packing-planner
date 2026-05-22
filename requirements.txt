@@ -1,7 +1,11 @@
 fastapi
-uvicorn
+uvicorn[standard]
 sqlmodel
 jinja2
 python-multipart
 fpdf2
 httpx
+pydantic-settings
+passlib[bcrypt]
+python-jose[cryptography]
+python-dotenv

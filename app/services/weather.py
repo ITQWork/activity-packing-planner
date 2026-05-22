@@ -1,18 +1,11 @@
 import httpx
-from datetime import date
-import os
+from datetime import date, timedelta
+from typing import Optional
 
-# Using a mock or a simple public weather API if available, 
-# but usually requires an API key. 
-# For this task, I'll implement a service that could use OpenWeatherMap 
-# or similar, but with a fallback/mock for demonstration.
-
-async def get_weather_forecast(destination: str, start_date: date, end_date: date = None):
+async def get_weather_forecast(destination: str, start_date: date, end_date: Optional[date] = None):
     # This is a placeholder. In a real app, you'd use an API key.
     # API_KEY = os.getenv("OPENWEATHER_API_KEY")
     # For now, return mock data for each day of the trip.
-    
-    from datetime import timedelta
     
     if not end_date:
         end_date = start_date

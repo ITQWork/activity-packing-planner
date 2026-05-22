@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from models import Trip, TripPackedItem, ActivityItemLink, Activity, Item
+from app.models.models import Trip, TripPackedItem, ActivityItemLink, Item
 from datetime import date
 
 def calculate_duration(start_date: date, end_date: date) -> int:

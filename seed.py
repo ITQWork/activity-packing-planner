@@ -1,58 +1,97 @@
-from sqlmodel import Session, create_engine, SQLModel, select
-from models import Item, Category, Activity, ActivityItemLink, Trip, TripPackedItem
-from logic import generate_trip_packing_list
-from datetime import date
+from sqlmodel import Session, select, SQLModel
+from app.db.session import engine
+from app.models.models import User, Category, Item, Activity, ActivityItemLink, Trip
+from app.services.packing import generate_trip_packing_list
+from datetime import date, timedelta
 
-DATABASE_URL = "sqlite:///./packing_planner.db"
-engine = create_engine(DATABASE_URL)
-
-def seed_data():
+def seed():
+    # Initialize DB
+    SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
+    
     with Session(engine) as session:
-        # Create Categories
-        cat1 = Category(name="Clothing")
-        cat2 = Category(name="Equipment")
-        session.add(cat1)
-        session.add(cat2)
+        # 1. Create Admin User
+        user = User(username="admin", password="password123")
+        session.add(user)
         session.commit()
-        session.refresh(cat1)
-        session.refresh(cat2)
+        session.refresh(user)
 
-        # Create Items
-        item1 = Item(name="Socks", unit_weight=50, category_id=cat1.id)
-        item2 = Item(name="T-shirt", unit_weight=150, category_id=cat1.id)
-        item3 = Item(name="Golf Club", unit_weight=500, category_id=cat2.id)
-        session.add(item1)
-        session.add(item2)
-        session.add(item3)
-        session.commit()
-        session.refresh(item1)
-        session.refresh(item2)
-        session.refresh(item3)
+        # 2. Categories
+        cats = ["Clothing", "Gear", "Toiletries", "Electronics", "Documents"]
+        category_objs = {}
+        for cat_name in cats:
+            cat = Category(name=cat_name)
+            session.add(cat)
+            session.commit()
+            session.refresh(cat)
+            category_objs[cat_name] = cat
 
-        # Create Activity
-        act = Activity(name="Golf Trip")
-        session.add(act)
-        session.commit()
-        session.refresh(act)
+        # 3. Items
+        items_data = [
+            ("Hiking Boots", "Gear", 1200),
+            ("Rain Jacket", "Clothing", 400),
+            ("Water Bottle", "Gear", 200),
+            ("Sunscreen", "Toiletries", 100),
+            ("Passport", "Documents", 50),
+            ("Power Bank", "Electronics", 300),
+            ("Wool Socks", "Clothing", 100),
+            ("Golf Clubs", "Gear", 5000),
+            ("Golf Polo", "Clothing", 250),
+            ("Swim Trunks", "Clothing", 200),
+            ("Beach Towel", "Gear", 600),
+            ("Camera", "Electronics", 800),
+        ]
+        item_objs = {}
+        for name, cat_name, weight in items_data:
+            item = Item(name=name, unit_weight=weight, category_id=category_objs[cat_name].id)
+            session.add(item)
+            session.commit()
+            session.refresh(item)
+            item_objs[name] = item
 
-        # Link items to Activity
-        link1 = ActivityItemLink(activity_id=act.id, item_id=item1.id, base_quantity=1)
-        link2 = ActivityItemLink(activity_id=act.id, item_id=item3.id, base_quantity=1)
-        session.add(link1)
-        session.add(link2)
-        session.commit()
+        # 4. Activities
+        activities_data = {
+            "Alpine Hiking": ["Hiking Boots", "Rain Jacket", "Water Bottle", "Wool Socks", "Power Bank"],
+            "Golf Weekend": ["Golf Clubs", "Golf Polo", "Sunscreen", "Power Bank"],
+            "Beach Escape": ["Swim Trunks", "Beach Towel", "Sunscreen", "Camera"],
+            "City Tour": ["Passport", "Camera", "Power Bank", "Rain Jacket"]
+        }
+        activity_objs = {}
+        for act_name, item_names in activities_data.items():
+            act = Activity(name=act_name)
+            session.add(act)
+            session.commit()
+            session.refresh(act)
+            # Link items
+            for i_name in item_names:
+                link = ActivityItemLink(activity_id=act.id, item_id=item_objs[i_name].id, base_quantity=1)
+                session.add(link)
+            session.commit()
+            activity_objs[act_name] = act
 
-        # Create a Trip
-        trip = Trip(destination="Pebble Beach", start_date=date(2026, 6, 1), end_date=date(2026, 6, 5), activity_id=act.id)
-        session.add(trip)
-        session.commit()
-        session.refresh(trip)
-
-        # Generate list
-        generate_trip_packing_list(session, trip)
+        # 5. Trips
+        today = date.today()
+        trips_data = [
+            ("Drakensberg", "Alpine Hiking", today + timedelta(days=2), today + timedelta(days=5)),
+            ("Mauritius", "Beach Escape", today + timedelta(days=4), today + timedelta(days=11)),
+            ("St Andrews", "Golf Weekend", today + timedelta(days=15), today + timedelta(days=18)),
+            ("Tokyo", "City Tour", today + timedelta(days=45), today + timedelta(days=55)),
+        ]
+        for dest, act_name, start, end in trips_data:
+            trip = Trip(
+                destination=dest,
+                activity_id=activity_objs[act_name].id,
+                user_id=user.id,
+                start_date=start,
+                end_date=end
+            )
+            session.add(trip)
+            session.commit()
+            session.refresh(trip)
+            # Force generate packing list for seeded trips
+            generate_trip_packing_list(session, trip)
         
-        print("Seed data created successfully!")
+        print("Rich test data seeded successfully!")
 
 if __name__ == "__main__":
-    seed_data()
+    seed()
