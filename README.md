@@ -78,3 +78,41 @@ API Documentation (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:80
 - **Frontend**: Vue.js 3 (located in `static/`)
 - **Services**: Custom Weather Service, PDF Generation Service (fpdf2)
 - **Configuration**: Pydantic Settings
+
+## System Architecture
+
+### Activity Diagram (User Flow)
+
+```mermaid
+graph TD
+    A[Start] --> B{Logged In?}
+    B -- No --> C[Sign Up / Login]
+    C --> D[Main Dashboard]
+    B -- Yes --> D
+    D --> E[Manage Gear Library]
+    E --> F[Create/Edit Activity Templates]
+    F --> G[Plan New Trip]
+    G --> H[System Generates Checklist]
+    H --> I[Fetch Weather Forecast]
+    I --> J[Pack Items]
+    J --> K{Trip Finished?}
+    K -- No --> J
+    K -- Yes --> L[Mark Completed]
+    L --> M[Move to Memories]
+    M --> N[Rate Trip]
+    N --> O[End]
+```
+
+### Database Schema (ERD)
+
+```mermaid
+erDiagram
+    USER ||--o{ TRIP : plans
+    CATEGORY ||--o{ ITEM : contains
+    ITEM }|--o{ ACTIVITY_ITEM_LINK : linked_to
+    ACTIVITY ||--o{ ACTIVITY_ITEM_LINK : has_items
+    ACTIVITY ||--o{ TRIP : template_for
+    TRIP ||--o{ TRIP_PACKED_ITEM : includes
+    TRIP ||--o{ REMINDER : has
+    ITEM ||--o{ TRIP_PACKED_ITEM : references
+```
