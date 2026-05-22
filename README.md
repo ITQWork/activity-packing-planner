@@ -41,6 +41,10 @@ main.py                 # Application entry point
 - Python 3.7+
 - All dependencies listed in `requirements.txt`
 
+> **Note on Terminal Commands:**
+> - **`py`**: Use this on Windows if you have the Python Launcher installed (standard with Python from python.org). It automatically finds the latest installed version of Python.
+> - **`python`** or **`python3`**: Use these on Linux, macOS, or Windows if the Python Launcher is not installed or you have manually added Python to your PATH.
+
 ### Installation
 
 1. Clone the repository to your local machine.
@@ -50,14 +54,18 @@ main.py                 # Application entry point
    ```
 3. Initialize the database and seed it with initial data:
    ```bash
-   python seed.py
+   py seed.py  # Windows
+   # OR
+   python seed.py  # Linux/macOS
    ```
 
 ### Running the App
 
-Start the backend server using Uvicorn:
+Start the backend server:
 ```bash
-python main.py
+py main.py  # Windows
+# OR
+python main.py  # Linux/macOS
 ```
 
 The application will be available at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
