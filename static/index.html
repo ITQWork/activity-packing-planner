@@ -83,7 +83,7 @@
                             @click="view = v" 
                             :class="view === v ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'"
                             class="w-full p-4 rounded-2xl transition flex items-center space-x-4 font-bold capitalize group">
-                        <i :class="getNavIcon(v)" class="text-lg group-hover:scale-110 transition shrink-0"></i>
+                        <i :class="getNavIcon(v)" class="w-6 text-center text-lg group-hover:scale-110 transition shrink-0"></i>
                         <span class="hidden md:block">{{ v }}</span>
                     </button>
                 </nav>
