@@ -1,0 +1,9 @@
+1. **Title**: Activity Packing Planner
+2. **The One-Liner**: A reusable packing list manager that builds activity-based lists, calculates quantities per trip length, and tracks non-packing reminders.
+3. **High-Level Specifications**:
+   - Users create and save base packing lists per activity (e.g., golf, equestrian, holiday); lists can be combined or built by selecting items from a master library.
+   - When a new item is added, the app prompts whether to save it to the master library for future reuse across other lists.
+   - Item quantities are calculated automatically based on trip duration (e.g., 1 pair of socks per day for a 5-day trip = 5 pairs).
+   - Non-packing reminders (e.g., arrange pet-sitter, check travel documents) can be added alongside packing items.
+   - A checklist view allows users to tick off items while packing; completed lists can be saved and reused for future events of the same type.
+

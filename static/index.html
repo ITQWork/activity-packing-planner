@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PackSmart | Your Trip Organizer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        [v-cloak] { display: none; }
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f1f5f9; }
+        h1, h2, h3, button, .font-heading { font-family: 'Outfit', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.8); }
+        .dark-card { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.05); }
+        .sidebar-item-active { background: rgba(99, 102, 241, 0.1); color: #818cf8; border-right: 3px solid #6366f1; }
+    </style>
+</head>
+<body class="min-h-screen selection:bg-indigo-500/30 selection:text-indigo-200">
+    <div id="app" v-cloak>
+        <!-- Auth Overlay -->
+        <div v-if="!user" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md">
+            <div class="bg-slate-900 p-8 rounded-[2rem] shadow-2xl w-full max-w-md border border-white/5">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 text-white mb-4 shadow-lg shadow-indigo-500/20">
+                        <i class="fa-solid fa-suitcase-rolling text-xl"></i>
+                    </div>
+                    <h1 class="text-3xl font-black text-white tracking-tight">PackSmart</h1>
+                    <p class="text-slate-400 font-medium mt-2">{{ isLogin ? 'Ready for your next adventure?' : 'Start your organizing journey' }}</p>
+                </div>
+
+                <form @submit.prevent="handleAuth" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Username</label>
+                        <input v-model="authForm.username" type="text" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all font-medium">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Password</label>
+                        <input v-model="authForm.password" type="password" required class="w-full px-4 py-3 bg-slate-800 border border-slate-700 text-white rounded-2xl focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500/50 outline-none transition-all font-medium">
+                    </div>
+                    <button type="submit" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-xl shadow-indigo-600/10 transition transform active:scale-[0.98] mt-2">
+                        {{ isLogin ? 'Sign In' : 'Join PackSmart' }}
+                    </button>
+                </form>
+
+                <div class="mt-8 text-center border-t border-slate-800 pt-6">
+                    <button @click="isLogin = !isLogin" class="text-indigo-400 hover:text-indigo-300 font-bold text-xs uppercase tracking-widest transition">
+                        {{ isLogin ? "Create an account" : "Already have an account?" }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <template v-if="user">
+            <!-- Sidebar Navigation -->
+            <aside class="fixed left-0 top-0 bottom-0 w-20 md:w-64 bg-slate-900 border-r border-slate-800 z-40 flex flex-col items-center md:items-stretch transition-all duration-300">
+                <div class="p-6 flex items-center space-x-3 mb-8">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/20 shrink-0">
+                        <i class="fa-solid fa-suitcase-rolling"></i>
+                    </div>
+                    <span class="text-xl font-black tracking-tight text-white hidden md:block">PackSmart</span>
+                </div>
+
+                <nav class="flex-grow px-3 space-y-1">
+                    <button v-for="v in ['trips', 'activities', 'library', 'help']" 
+                            @click="view = v" 
+                            :class="view === v ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'"
+                            class="w-full p-4 rounded-2xl transition flex items-center space-x-4 font-bold capitalize group">
+                        <i :class="getNavIcon(v)" class="text-lg group-hover:scale-110 transition shrink-0"></i>
+                        <span class="hidden md:block">{{ v }}</span>
+                    </button>
+                </nav>
+
+                <div class="p-4 border-t border-slate-800">
+                    <div class="bg-slate-800/50 p-4 rounded-2xl flex items-center justify-between md:justify-start md:space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-700 shadow-sm flex items-center justify-center text-indigo-400 font-black text-xs shrink-0">
+                            {{ user.username.charAt(0).toUpperCase() }}
+                        </div>
+                        <div class="hidden md:block flex-grow min-w-0">
+                            <p class="text-xs font-black text-white truncate uppercase tracking-tighter">{{ user.username }}</p>
+                            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Organizer</p>
+                        </div>
+                        <button @click="logout" class="text-slate-600 hover:text-red-400 transition px-2">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main Content Area -->
+            <main class="ml-20 md:ml-64 p-4 md:p-8 transition-all duration-300">
+                <div class="max-w-6xl mx-auto space-y-8">
+                    
+                    <!-- Trips View -->
+                    <section v-if="view === 'trips'" class="space-y-8">
+                        <div class="dark-card p-6 md:p-8 rounded-[2rem] shadow-sm relative overflow-hidden">
+                            <div class="absolute -right-8 -top-8 opacity-[0.03] pointer-events-none rotate-12 text-white">
+                                <i class="fa-solid fa-plane-departure text-[12rem]"></i>
+                            </div>
+                            
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+                                <div>
+                                    <h2 class="text-2xl font-black text-white tracking-tight">New Adventure</h2>
+                                    <p class="text-sm text-slate-500 font-medium">Where's your curiosity taking you next?</p>
+                                </div>
+                                <button @click="createTrip" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-8 py-3.5 rounded-2xl shadow-xl shadow-indigo-600/10 active:scale-[0.98] transition flex items-center justify-center space-x-2">
+                                    <i class="fa-solid fa-plus text-xs"></i>
+                                    <span>Plan Trip</span>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                                <div class="space-y-2 md:col-span-5">
+                                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] ml-1">Destination</label>
+                                    <div class="relative">
+                                        <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"></i>
+                                        <input v-model="newTrip.destination" placeholder="Cape Town, Tokyo..." class="w-full bg-slate-800 border-none pl-11 pr-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white placeholder:text-slate-600">
+                                    </div>
+                                </div>
+                                <div class="space-y-2 md:col-span-3">
+                                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] ml-1">Activity</label>
+                                    <select v-model="newTrip.activity_id" class="w-full bg-slate-800 border-none px-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white appearance-none">
+                                        <option value="">Select Category...</option>
+                                        <option v-for="a in activities" :key="a.id" :value="a.id" class="bg-slate-800">{{ a.name }}</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-2 md:col-span-4">
+                                    <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] ml-1">Duration</label>
+                                    <div class="flex items-center space-x-2 bg-slate-800 rounded-2xl px-2">
+                                        <input type="date" v-model="newTrip.start_date" class="bg-transparent border-none py-4 px-2 outline-none text-[11px] font-black uppercase text-slate-300 grow">
+                                        <span class="text-slate-600 font-bold">→</span>
+                                        <input type="date" v-model="newTrip.end_date" class="bg-transparent border-none py-4 px-2 outline-none text-[11px] font-black uppercase text-slate-300 grow">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-12">
+                            <!-- Upcoming Trips -->
+                            <div v-if="upcomingTrips.length" class="space-y-6">
+                                <div class="flex items-center justify-between px-2">
+                                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
+                                        <span class="w-6 h-1 bg-indigo-500 rounded-full mr-3"></span>
+                                        Upcoming Trips
+                                    </h3>
+                                    <span class="px-2.5 py-1 bg-indigo-500/10 text-indigo-400 rounded-lg text-[10px] font-black">{{ upcomingTrips.length }}</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div v-for="trip in upcomingTrips" :key="trip.id" class="bg-slate-800/40 rounded-[2rem] border border-white/5 overflow-hidden hover:bg-slate-800 hover:border-indigo-500/30 transition-all duration-500 group cursor-pointer" @click="viewTrip(trip)">
+                                        <div class="p-6">
+                                            <div class="flex justify-between items-start mb-6">
+                                                <div class="min-w-0">
+                                                    <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{{ getActivityName(trip.activity_id) }}</p>
+                                                    <h3 class="font-black text-xl text-white truncate group-hover:text-indigo-400 transition">{{ trip.destination }}</h3>
+                                                </div>
+                                                <div class="bg-slate-800 group-hover:bg-indigo-600 text-slate-400 group-hover:text-white p-3 rounded-2xl transition duration-500 shadow-sm border border-white/5 relative">
+                                                    <i class="fa-solid fa-bolt-lightning text-sm"></i>
+                                                    <button @click.stop="deleteTrip(trip.id)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-lg">
+                                                        <i class="fa-solid fa-times text-[10px]"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center space-x-3 bg-black/20 p-3 rounded-2xl mb-6">
+                                                <i class="fa-regular fa-calendar text-slate-500"></i>
+                                                <span class="text-[11px] font-black text-slate-300 uppercase tracking-tighter">
+                                                    {{ formatDateRange(trip.start_date, trip.end_date) }}
+                                                </span>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Click to pack</span>
+                                                <div class="flex items-center text-xs font-black text-indigo-400 uppercase tracking-widest">
+                                                    Ready
+                                                    <i class="fa-solid fa-chevron-right ml-2 group-hover:translate-x-1 transition"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Future Trips -->
+                            <div v-if="futureTrips.length" class="space-y-6">
+                                <div class="flex items-center justify-between px-2">
+                                    <h3 class="text-xs font-black text-slate-500 uppercase tracking-[0.2em] flex items-center">
+                                        <span class="w-6 h-1 bg-slate-700 rounded-full mr-3"></span>
+                                        Future Wandering
+                                    </h3>
+                                    <span class="px-2.5 py-1 bg-slate-800 text-slate-500 rounded-lg text-[10px] font-black">{{ futureTrips.length }}</span>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                                    <div v-for="trip in futureTrips" :key="trip.id" class="dark-card rounded-3xl p-5 hover:border-indigo-500/30 hover:bg-slate-800 transition-all duration-300 group relative">
+                                        <div class="flex justify-between items-start mb-4">
+                                            <div class="min-w-0 pr-8">
+                                                <h3 class="font-bold text-white truncate">{{ trip.destination }}</h3>
+                                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">{{ getActivityName(trip.activity_id) }}</p>
+                                            </div>
+                                            <button @click.stop="deleteTrip(trip.id)" class="absolute right-4 top-4 text-slate-700 hover:text-red-400 transition z-10">
+                                                <i class="fa-solid fa-trash-can text-xs"></i>
+                                            </button>
+                                        </div>
+                                        <div class="text-[10px] font-black text-slate-400 mb-4 bg-black/20 py-2 px-3 rounded-xl inline-block">
+                                            {{ formatDateRange(trip.start_date, trip.end_date) }}
+                                        </div>
+                                        <button @click="viewTrip(trip)" class="w-full py-3 bg-slate-800 hover:bg-indigo-500 hover:text-white text-slate-500 font-black rounded-xl transition text-[10px] uppercase tracking-[0.15em]">
+                                            Open Planner
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Activities View -->
+                    <section v-if="view === 'activities'" class="space-y-8">
+                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                            <div>
+                                <h2 class="text-3xl font-black tracking-tight text-white">Activity Templates</h2>
+                                <p class="text-slate-500 font-medium mt-1">Reusable checklists for your favorite hobbies.</p>
+                            </div>
+                            <div class="flex bg-slate-800 p-2 rounded-2xl border border-white/5 min-w-[300px]">
+                                <input v-model="newActivityName" placeholder="Hiking, Golf, Spa..." class="flex-grow bg-transparent border-none px-4 outline-none font-bold text-sm text-white placeholder:text-slate-600">
+                                <button @click="createActivity" class="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-600/10 hover:bg-indigo-500 transition">Add</button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div v-for="activity in activities" :key="activity.id" class="bg-slate-800/40 rounded-[2rem] border border-white/5 shadow-sm hover:border-indigo-500/30 transition-all duration-300 p-6 flex flex-col h-full">
+                                <div class="flex justify-between items-start mb-6">
+                                    <div class="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                                        <i class="fa-solid fa-person-hiking"></i>
+                                    </div>
+                                    <button @click="deleteActivity(activity.id)" class="text-slate-700 hover:text-red-400 transition">
+                                        <i class="fa-solid fa-trash-can text-sm"></i>
+                                    </button>
+                                </div>
+                                
+                                <h3 class="font-black text-xl text-white mb-6">{{ activity.name }}</h3>
+                                
+                                <div class="flex-grow space-y-4">
+                                    <div v-if="!activity.items_with_qty || activity.items_with_qty.length === 0" class="text-center py-8 px-4 bg-black/10 rounded-2xl border-2 border-dashed border-slate-800">
+                                        <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest">No items linked</p>
+                                    </div>
+                                    <ul v-else class="space-y-2">
+                                        <li v-for="item in activity.items_with_qty" class="flex items-center justify-between bg-slate-800/50 py-2 px-3 rounded-xl border border-white/5">
+                                            <span class="text-xs font-bold text-slate-300 truncate pr-2">{{ item.name }}</span>
+                                            <span class="text-[10px] font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded shrink-0">x{{ item.base_quantity }}</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <div class="mt-8 pt-6 border-t border-slate-800 space-y-4">
+                                    <p class="text-[10px] font-black text-slate-600 uppercase tracking-widest ml-1">Add Item</p>
+                                    <div class="grid grid-cols-5 gap-2">
+                                        <select v-model="activityLinks[activity.id].item_id" class="col-span-3 bg-slate-900 border-none rounded-xl px-2 py-3 text-[10px] font-bold text-slate-400 outline-none">
+                                            <option value="">Select Gear...</option>
+                                            <option v-for="i in items" :key="i.id" :value="i.id" class="bg-slate-900">{{ i.name }}</option>
+                                        </select>
+                                        <input v-model.number="activityLinks[activity.id].base_quantity" type="number" class="col-span-1 bg-slate-900 border-none rounded-xl px-2 py-3 text-[10px] font-black text-center text-white outline-none" placeholder="Qty">
+                                        <button @click="addItemToActivity(activity.id)" class="col-span-1 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg shadow-indigo-600/10 active:scale-95 transition">
+                                            <i class="fa-solid fa-plus text-[10px]"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Library View -->
+                    <section v-if="view === 'library'" class="space-y-8">
+                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                            <div>
+                                <h2 class="text-3xl font-black tracking-tight text-white">Gear Library</h2>
+                                <p class="text-slate-500 font-medium mt-1">Manage your inventory of travel items and weight.</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <div class="bg-slate-800 px-3 py-1.5 rounded-xl border border-white/5 flex items-center space-x-2">
+                                    <i class="fa-solid fa-boxes-stacked text-indigo-400 text-xs"></i>
+                                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ items.length }} Items</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            <!-- New Item Panel -->
+                            <div class="lg:col-span-1">
+                                <div class="dark-card p-8 rounded-[2rem] shadow-sm sticky top-8">
+                                    <h3 class="font-black text-lg text-white mb-6">New Inventory Item</h3>
+                                    <div class="space-y-5">
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Name</label>
+                                            <input v-model="newItem.name" placeholder="Item Name" class="w-full bg-slate-900 border-none px-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white placeholder:text-slate-700">
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Weight (grams)</label>
+                                            <input v-model.number="newItem.unit_weight" type="number" placeholder="500" class="w-full bg-slate-900 border-none px-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white placeholder:text-slate-700">
+                                        </div>
+                                        <div class="space-y-1.5">
+                                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Category</label>
+                                            <select v-model="newItem.category_id" class="w-full bg-slate-900 border-none px-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white appearance-none">
+                                                <option value="">Select Category...</option>
+                                                <option v-for="c in categories" :key="c.id" :value="c.id" class="bg-slate-900">{{ c.name }}</option>
+                                            </select>
+                                        </div>
+                                        <button @click="createItem" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-black rounded-2xl shadow-xl shadow-indigo-600/10 transition active:scale-[0.98] mt-4 uppercase text-xs tracking-widest">
+                                            Add to Catalog
+                                        </button>
+                                    </div>
+
+                                    <div class="mt-10 pt-8 border-t border-slate-800">
+                                        <h4 class="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-4">Categories</h4>
+                                        <div class="flex space-x-2 mb-4">
+                                            <input v-model="newCategoryName" placeholder="New cat..." class="flex-grow bg-slate-900 border-none px-4 py-3 rounded-xl outline-none font-bold text-xs text-white">
+                                            <button @click="createCategory" class="bg-slate-700 text-white px-4 rounded-xl shadow-md active:scale-90 transition">
+                                                <i class="fa-solid fa-plus text-xs"></i>
+                                            </button>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span v-for="c in categories" :key="c.id" class="bg-slate-900 text-slate-500 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/5">
+                                                {{ c.name }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Master List Panel -->
+                            <div class="lg:col-span-2">
+                                <div class="dark-card rounded-[2rem] p-8">
+                                    <div class="flex items-center justify-between mb-8">
+                                        <h3 class="font-black text-xl text-white tracking-tight">Inventory Catalog</h3>
+                                        <div class="relative w-48">
+                                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-600 text-xs"></i>
+                                            <input placeholder="Search..." class="w-full bg-slate-900 border-none pl-9 pr-4 py-2 rounded-xl text-xs font-bold outline-none text-white">
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div v-for="item in items" :key="item.id" class="p-4 bg-slate-900/50 border border-white/5 rounded-3xl hover:border-indigo-500/40 hover:bg-slate-800 transition-all group">
+                                            <div class="flex items-center space-x-4">
+                                                <div class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-600 group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition duration-300">
+                                                    <i class="fa-solid fa-box text-lg"></i>
+                                                </div>
+                                                <div class="flex-grow min-w-0">
+                                                    <h4 class="text-sm font-black text-slate-200 truncate group-hover:text-indigo-400 transition">{{ item.name }}</h4>
+                                                    <div class="flex items-center space-x-2 mt-0.5">
+                                                        <span class="text-[9px] font-black text-slate-600 uppercase tracking-widest">{{ getCategoryName(item.category_id) }}</span>
+                                                        <span class="text-indigo-900 text-[8px]">•</span>
+                                                        <span class="text-[9px] font-bold text-indigo-500/70">{{ (item.unit_weight/1000).toFixed(2) }}kg</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Help View -->
+                    <section v-if="view === 'help'" class="max-w-3xl mx-auto space-y-12 py-10">
+                        <div class="text-center space-y-4">
+                            <h2 class="text-4xl font-black text-white tracking-tight">Organizer's Guide</h2>
+                            <p class="text-slate-500 font-medium">Learn how to make travel planning effortless with PackSmart.</p>
+                        </div>
+
+                        <div class="grid gap-8">
+                            <div class="flex space-x-6">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black shrink-0 shadow-lg shadow-indigo-600/20">1</div>
+                                <div class="space-y-2">
+                                    <h3 class="text-xl font-black text-white">Build Your Gear Library</h3>
+                                    <p class="text-slate-500 leading-relaxed text-sm font-medium">Start by adding all your travel gear to the <b>Library</b>. Accurate weights help the app calculate your total load automatically for every trip.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex space-x-6">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black shrink-0 shadow-lg shadow-indigo-600/20">2</div>
+                                <div class="space-y-2">
+                                    <h3 class="text-xl font-black text-white">Create Activity Templates</h3>
+                                    <p class="text-slate-500 leading-relaxed text-sm font-medium">In the <b>Activities</b> tab, create templates like "Hiking" or "Beach". Add items from your library to these templates as a baseline for any future trip.</p>
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-6">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black shrink-0 shadow-lg shadow-indigo-600/20">3</div>
+                                <div class="space-y-2">
+                                    <h3 class="text-xl font-black text-white">Plan and Pack</h3>
+                                    <p class="text-slate-500 leading-relaxed text-sm font-medium">Go to <b>Trips</b> to start planning. Selecting an activity automatically generates a checklist, including daily weather forecasts for your stay!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-indigo-600 rounded-[3rem] p-8 md:p-12 text-white text-center space-y-6 shadow-2xl shadow-indigo-600/10">
+                            <h3 class="text-2xl font-black">Ready to explore?</h3>
+                            <p class="text-indigo-100 text-sm max-w-sm mx-auto font-medium">Stop worrying about what you missed and start getting excited for the journey.</p>
+                            <button @click="view = 'trips'" class="bg-white text-indigo-600 px-10 py-4 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl active:scale-95 transition">Go to My Trips</button>
+                        </div>
+                    </section>
+                </div>
+            </main>
+
+            <!-- Trip Details Modal -->
+            <div v-if="selectedTrip" class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 bg-black/80 backdrop-blur-md">
+                <div class="bg-slate-900 rounded-[3rem] shadow-2xl w-full max-w-4xl max-h-full flex flex-col overflow-hidden border border-white/5">
+                    <div class="p-8 pb-4 flex justify-between items-start">
+                        <div>
+                            <p class="text-[11px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Packing Checklist</p>
+                            <h2 class="text-3xl font-black text-white tracking-tighter">{{ selectedTrip.destination }}</h2>
+                            <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">
+                                <i class="fa-solid fa-tag mr-2 text-indigo-500"></i>{{ getActivityName(selectedTrip.activity_id) }}
+                            </p>
+                        </div>
+                        <button @click="selectedTrip = null" class="bg-slate-800 w-12 h-12 rounded-2xl hover:bg-slate-700 transition flex items-center justify-center group">
+                            <i class="fa-solid fa-times text-slate-500 group-hover:rotate-90 transition duration-300"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="px-8 pb-8 overflow-y-auto space-y-8 scrollbar-hide">
+                        <!-- Weather Forecasts -->
+                        <div v-if="weather && weather.forecasts" class="space-y-4">
+                            <h4 class="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Weather Forecast</h4>
+                            <div class="flex space-x-3 overflow-x-auto pb-4 scrollbar-hide">
+                                <div v-for="day in weather.forecasts" :key="day.date" 
+                                     class="flex-shrink-0 w-36 bg-slate-800/50 border border-white/5 p-4 rounded-[2rem] flex flex-col items-center text-center">
+                                    <p class="text-[9px] text-slate-600 font-black uppercase tracking-widest mb-3">{{ formatDateShort(day.date) }}</p>
+                                    <div class="w-10 h-10 rounded-full bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3">
+                                        <i class="fa-solid fa-sun"></i>
+                                    </div>
+                                    <p class="text-[10px] font-bold text-slate-300 leading-tight mb-4 min-h-[2.5em]">{{ day.forecast }}</p>
+                                    <div class="flex space-x-3 mt-auto">
+                                        <span class="text-sm font-black text-white">{{ day.temp_high }}°</span>
+                                        <span class="text-sm font-bold text-slate-600">{{ day.temp_low }}°</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="md:col-span-2 space-y-4">
+                                <h4 class="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] ml-1">Items to Pack</h4>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <div v-for="item in tripItems" :key="item.id" 
+                                         class="flex items-center space-x-4 p-5 rounded-3xl transition-all duration-300 cursor-pointer"
+                                         :class="item.is_packed ? 'bg-indigo-500/10' : 'bg-slate-800 border border-white/5 shadow-sm hover:border-indigo-500/30'"
+                                         @click="item.is_packed = !item.is_packed; togglePacked(item)">
+                                        <div class="w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300"
+                                             :class="item.is_packed ? 'bg-indigo-600 border-indigo-600 scale-90' : 'border-slate-700 bg-slate-900 group-hover:border-indigo-500'">
+                                            <i v-if="item.is_packed" class="fa-solid fa-check text-white text-[10px]"></i>
+                                        </div>
+                                        <div class="flex-grow min-w-0">
+                                            <p class="font-black text-sm" :class="item.is_packed ? 'line-through text-slate-600' : 'text-slate-200'">
+                                                {{ item.item_detail?.name || 'Unknown Item' }}
+                                            </p>
+                                            <div class="flex items-center space-x-2 mt-1">
+                                                <span class="text-[9px] font-black uppercase tracking-tighter" :class="item.is_packed ? 'text-indigo-900' : 'text-slate-500'">Qty: {{ item.quantity }}</span>
+                                                <span v-if="item.item_detail" class="text-[9px] font-black text-indigo-400 uppercase tracking-tighter">{{ (item.item_detail.unit_weight * item.quantity / 1000).toFixed(2) }}kg</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="md:col-span-1 space-y-6">
+                                <div class="bg-black/40 rounded-[2rem] p-8 border border-white/5 shadow-xl">
+                                    <div class="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 mb-6">
+                                        <i class="fa-solid fa-weight-hanging text-lg"></i>
+                                    </div>
+                                    <p class="text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-1">Estimated Load</p>
+                                    <h4 class="text-3xl font-black text-white">{{ (tripWeight / 1000).toFixed(2) }}<span class="text-sm ml-1 font-bold opacity-30 uppercase">kg</span></h4>
+                                    <div class="mt-8 space-y-2">
+                                        <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                                            <div class="h-full bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]" :style="{width: Math.min((tripWeight/15000)*100, 100) + '%'}"></div>
+                                        </div>
+                                        <p class="text-[9px] font-black text-slate-700 uppercase text-right">Max Recommended 15kg</p>
+                                    </div>
+                                </div>
+
+                                <div class="bg-indigo-500/5 border border-indigo-500/10 rounded-[2rem] p-6 space-y-3">
+                                    <div class="flex items-center space-x-2 text-indigo-400 mb-2">
+                                        <i class="fa-solid fa-lightbulb text-xs"></i>
+                                        <span class="text-[10px] font-black uppercase tracking-widest">Packing Pro-Tip</span>
+                                    </div>
+                                    <p class="text-[11px] text-slate-400 font-medium leading-relaxed italic">Roll your clothes instead of folding to save 30% more space in your carry-on!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+
+        createApp({
+            data() {
+                return {
+                    user: JSON.parse(localStorage.getItem('packsmart_user')) || null,
+                    view: 'trips',
+                    isLogin: true,
+                    authForm: { username: '', password: '' },
+                    items: [],
+                    categories: [],
+                    activities: [],
+                    trips: [],
+                    tripItems: [],
+                    selectedTrip: null,
+                    weather: null,
+                    tripWeight: null,
+                    newTrip: { destination: '', activity_id: '', start_date: '', end_date: '' },
+                    newItem: { name: '', unit_weight: 0, category_id: '' },
+                    newCategoryName: '',
+                    newActivityName: '',
+                    activityLinks: {}
+                }
+            },
+            computed: {
+                sortedTrips() {
+                    return [...this.trips].sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+                },
+                upcomingTrips() {
+                    const now = new Date();
+                    now.setHours(0,0,0,0);
+                    const nextWeek = new Date();
+                    nextWeek.setDate(now.getDate() + 7);
+                    
+                    return this.sortedTrips.filter(t => {
+                        const start = new Date(t.start_date);
+                        return start >= now && start <= nextWeek;
+                    });
+                },
+                futureTrips() {
+                    const now = new Date();
+                    now.setHours(0,0,0,0);
+                    const nextWeek = new Date();
+                    nextWeek.setDate(now.getDate() + 7);
+                    
+                    return this.sortedTrips.filter(t => new Date(t.start_date) > nextWeek);
+                }
+            },
+            mounted() {
+                if (this.user) this.fetchData();
+            },
+            methods: {
+                async handleAuth() {
+                    const endpoint = this.isLogin ? '/login' : '/signup';
+                    try {
+                        const res = await axios.post(endpoint, this.authForm);
+                        if (this.isLogin) {
+                            this.user = res.data;
+                            localStorage.setItem('packsmart_user', JSON.stringify(this.user));
+                            this.fetchData();
+                        } else {
+                            this.isLogin = true;
+                            alert('Welcome! Sign in to start planning.');
+                        }
+                    } catch (e) {
+                        alert(e.response?.data?.detail || 'Login failed');
+                    }
+                },
+                logout() {
+                    this.user = null;
+                    localStorage.removeItem('packsmart_user');
+                },
+                async fetchData() {
+                    if (!this.user || !this.user.user_id) return;
+                    try {
+                        const [items, categories, activities, trips] = await Promise.all([
+                            axios.get('/items'),
+                            axios.get('/categories'),
+                            axios.get('/activities'),
+                            axios.get('/trips', { params: { user_id: this.user.user_id } })
+                        ]);
+                        this.items = items.data;
+                        this.categories = categories.data;
+                        this.activities = activities.data;
+                        this.trips = trips.data;
+                        
+                        const newLinks = { ...this.activityLinks };
+                        this.activities.forEach(a => {
+                            if (!newLinks[a.id]) {
+                                newLinks[a.id] = { item_id: '', base_quantity: 1 };
+                            }
+                        });
+                        this.activityLinks = newLinks;
+                    } catch (e) { console.error(e); }
+                },
+                async createCategory() {
+                    await axios.post('/categories', { name: this.newCategoryName });
+                    this.newCategoryName = '';
+                    await this.fetchData();
+                },
+                async createItem() {
+                    await axios.post('/items', this.newItem);
+                    this.newItem = { name: '', unit_weight: 0, category_id: '' };
+                    await this.fetchData();
+                },
+                async createActivity() {
+                    try {
+                        await axios.post('/activities', { name: this.newActivityName });
+                        this.newActivityName = '';
+                        await this.fetchData();
+                    } catch (e) {
+                        alert(e.response?.data?.detail || 'Failed');
+                    }
+                },
+                async addItemToActivity(activityId) {
+                    const link = this.activityLinks[activityId];
+                    if (!link.item_id) return;
+                    try {
+                        await axios.post(`/activities/${activityId}/items/${link.item_id}?base_quantity=${link.base_quantity}`);
+                        await this.fetchData();
+                    } catch (e) { console.error(e); }
+                },
+                async deleteActivity(activityId) {
+                    if (!confirm('Discard template?')) return;
+                    try {
+                        await axios.delete(`/activities/${activityId}`);
+                        await this.fetchData();
+                    } catch (e) {
+                        alert(e.response?.data?.detail || 'Used in active trip');
+                    }
+                },
+                async deleteTrip(tripId) {
+                    if (!confirm('Delete this trip?')) return;
+                    try {
+                        await axios.delete(`/trips/${tripId}`);
+                        await this.fetchData();
+                    } catch (e) {
+                        alert(e.response?.data?.detail || 'Deletion failed');
+                    }
+                },
+                async createTrip() {
+                    const tripData = { ...this.newTrip, user_id: this.user.user_id }; 
+                    if (!tripData.destination || !tripData.activity_id || !tripData.start_date || !tripData.end_date) {
+                        alert('Details incomplete');
+                        return;
+                    }
+                    try {
+                        await axios.post('/trips', tripData);
+                        this.newTrip = { destination: '', activity_id: '', start_date: '', end_date: '' };
+                        await this.fetchData();
+                    } catch (e) { console.error(e); }
+                },
+                async viewTrip(trip) {
+                    this.selectedTrip = trip;
+                    const [items, weather, weight] = await Promise.all([
+                        axios.get(`/trips/${trip.id}/items`),
+                        axios.get(`/trips/${trip.id}/weather`),
+                        axios.get(`/trips/${trip.id}/weight`)
+                    ]);
+                    this.tripItems = items.data;
+                    this.weather = weather.data;
+                    this.tripWeight = weight.data.total_weight;
+                },
+                async togglePacked(item) {
+                    await axios.patch(`/trip-items/${item.id}?is_packed=${item.is_packed}`);
+                },
+                getCategoryName(id) {
+                    return this.categories.find(c => c.id === id)?.name || 'Misc';
+                },
+                getActivityName(id) {
+                    return this.activities.find(a => a.id === id)?.name || 'General';
+                },
+                formatDateShort(d) {
+                    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                },
+                formatDateRange(start, end) {
+                    const s = new Date(start);
+                    const e = new Date(end);
+                    const options = { month: 'short', day: 'numeric' };
+                    if (s.getTime() === e.getTime()) return s.toLocaleDateString('en-US', options);
+                    return `${s.toLocaleDateString('en-US', options)} - ${e.toLocaleDateString('en-US', options)}`;
+                },
+                getNavIcon(v) {
+                    return { trips: 'fa-solid fa-compass', activities: 'fa-solid fa-person-hiking', library: 'fa-solid fa-boxes-stacked', help: 'fa-solid fa-circle-info' }[v];
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
