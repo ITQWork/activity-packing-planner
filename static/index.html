@@ -519,7 +519,7 @@
                                             {{ formatDateRange(selectedTrip.start_date, selectedTrip.end_date) }}
                                         </span>
                                     </div>
-                                    <button @click="editingTrip = selectedTrip.id" class="text-indigo-400 hover:text-indigo-300 text-[10px] font-black uppercase tracking-widest flex items-center">
+                                    <button v-if="!selectedTrip.is_completed" @click="editingTrip = selectedTrip.id" class="text-indigo-400 hover:text-indigo-300 text-[10px] font-black uppercase tracking-widest flex items-center">
                                         <i class="fa-solid fa-calendar-day mr-2"></i>Edit
                                     </button>
                                 </div>
@@ -856,7 +856,10 @@
                     try {
                         await axios.patch(`/trips/${trip.id}`, { is_completed: true, rating: 5 });
                         await this.fetchData();
-                        if (this.selectedTrip) this.selectedTrip.is_completed = true;
+                        if (this.selectedTrip) {
+                            this.selectedTrip.is_completed = true;
+                            this.editingTrip = null;
+                        }
                     } catch (e) { alert('Failed to complete trip'); }
                 },
                 async rateTrip(trip, rating) {
