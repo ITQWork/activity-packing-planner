@@ -4,7 +4,7 @@ from typing import List, Optional
 from datetime import datetime
 from app.db.session import get_session
 from app.models.models import Trip, TripPackedItem, Reminder, Item as ItemModel, Category
-from app.schemas.schemas import Trip as TripSchema, TripCreate, TripPackedItem as TripPackedItemSchema, Message
+from app.schemas.schemas import Trip as TripSchema, TripCreate, TripUpdate, TripPackedItem as TripPackedItemSchema, Message
 from app.services.packing import generate_trip_packing_list, calculate_trip_weight
 from app.services.weather import get_weather_forecast
 from app.services.pdf import generate_pdf
@@ -49,6 +49,21 @@ def delete_trip(trip_id: int, session: Session = Depends(get_session)):
     session.delete(trip)
     session.commit()
     return {"message": "Trip deleted"}
+
+@router.patch("/{trip_id}", response_model=TripSchema)
+def update_trip(trip_id: int, trip_in: TripUpdate, session: Session = Depends(get_session)):
+    trip = session.get(Trip, trip_id)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    update_data = trip_in.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(trip, key, value)
+    
+    session.add(trip)
+    session.commit()
+    session.refresh(trip)
+    return trip
 
 @router.get("/{trip_id}/items", response_model=List[TripPackedItemSchema])
 def read_trip_items(trip_id: int, session: Session = Depends(get_session)):

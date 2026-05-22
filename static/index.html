@@ -325,9 +325,12 @@
                                             </button>
                                         </div>
                                         <div class="flex flex-wrap gap-2">
-                                            <span v-for="c in categories" :key="c.id" class="bg-slate-900 text-slate-500 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/5">
-                                                {{ c.name }}
-                                            </span>
+                                            <div v-for="c in categories" :key="c.id" class="group relative bg-slate-900 text-slate-500 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border border-white/5 flex items-center space-x-2">
+                                                <span>{{ c.name }}</span>
+                                                <button @click="deleteCategory(c.id)" class="text-slate-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <i class="fa-solid fa-times"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -345,7 +348,10 @@
                                     </div>
 
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div v-for="item in items" :key="item.id" class="p-4 bg-slate-900/50 border border-white/5 rounded-3xl hover:border-indigo-500/40 hover:bg-slate-800 transition-all group">
+                                        <div v-for="item in items" :key="item.id" class="p-4 bg-slate-900/50 border border-white/5 rounded-3xl hover:border-indigo-500/40 hover:bg-slate-800 transition-all group relative">
+                                            <button @click="deleteItem(item.id)" class="absolute right-4 top-4 text-slate-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                <i class="fa-solid fa-trash-can text-[10px]"></i>
+                                            </button>
                                             <div class="flex items-center space-x-4">
                                                 <div class="w-12 h-12 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-600 group-hover:bg-indigo-500/10 group-hover:text-indigo-400 transition duration-300">
                                                     <i class="fa-solid fa-box text-lg"></i>
@@ -415,7 +421,43 @@
                         <div>
                             <p class="text-[11px] font-black text-indigo-400 uppercase tracking-[0.2em] mb-1">Packing Checklist</p>
                             <h2 class="text-3xl font-black text-white tracking-tighter">{{ selectedTrip.destination }}</h2>
-                            <div class="flex items-center space-x-4 mt-1">
+                            
+                            <!-- Date Range Editor -->
+                            <div class="mt-4 bg-black/30 p-4 rounded-2xl border border-white/5 max-w-sm">
+                                <div v-if="editingTrip === selectedTrip.id" class="flex items-center space-x-3">
+                                    <div class="grid grid-cols-2 gap-3 grow">
+                                        <div class="space-y-1">
+                                            <label class="text-[8px] font-black text-slate-600 uppercase tracking-widest ml-1">Start</label>
+                                            <input type="date" v-model="selectedTrip.start_date" class="w-full bg-slate-800 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-black text-white outline-none focus:border-indigo-500/50">
+                                        </div>
+                                        <div class="space-y-1">
+                                            <label class="text-[8px] font-black text-slate-600 uppercase tracking-widest ml-1">End</label>
+                                            <input type="date" v-model="selectedTrip.end_date" class="w-full bg-slate-800 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] font-black text-white outline-none focus:border-indigo-500/50">
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col space-y-2 pt-4">
+                                        <button @click="saveTrip(selectedTrip)" class="w-8 h-8 bg-indigo-600 text-white rounded-lg shadow-lg shadow-indigo-600/20 flex items-center justify-center">
+                                            <i class="fa-solid fa-check text-[10px]"></i>
+                                        </button>
+                                        <button @click="editingTrip = null" class="w-8 h-8 bg-slate-800 text-slate-400 rounded-lg flex items-center justify-center">
+                                            <i class="fa-solid fa-times text-[10px]"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-else class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fa-regular fa-calendar text-indigo-500 text-sm"></i>
+                                        <span class="text-xs font-black text-slate-300 uppercase tracking-widest">
+                                            {{ formatDateRange(selectedTrip.start_date, selectedTrip.end_date) }}
+                                        </span>
+                                    </div>
+                                    <button @click="editingTrip = selectedTrip.id" class="text-indigo-400 hover:text-indigo-300 text-[10px] font-black uppercase tracking-widest flex items-center">
+                                        <i class="fa-solid fa-calendar-day mr-2"></i>Edit
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-4 mt-4">
                                 <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">
                                     <i class="fa-solid fa-tag mr-2 text-indigo-500"></i>{{ getActivityName(selectedTrip.activity_id) }}
                                 </p>
@@ -520,6 +562,7 @@
                     trips: [],
                     tripItems: [],
                     selectedTrip: null,
+                    editingTrip: null,
                     weather: null,
                     tripWeight: null,
                     newTrip: { destination: '', activity_id: '', start_date: '', end_date: '' },
@@ -605,10 +648,24 @@
                     this.newCategoryName = '';
                     await this.fetchData();
                 },
+                async deleteCategory(id) {
+                    if (!confirm('Delete this category? Items will be uncategorized.')) return;
+                    try {
+                        await axios.delete(`/categories/${id}`);
+                        await this.fetchData();
+                    } catch (e) { alert('Delete failed'); }
+                },
                 async createItem() {
                     await axios.post('/items', this.newItem);
                     this.newItem = { name: '', unit_weight: 0, category_id: '' };
                     await this.fetchData();
+                },
+                async deleteItem(id) {
+                    if (!confirm('Remove from library?')) return;
+                    try {
+                        await axios.delete(`/items/${id}`);
+                        await this.fetchData();
+                    } catch (e) { alert('Delete failed'); }
                 },
                 async createActivity() {
                     try {
@@ -634,6 +691,21 @@
                         await this.fetchData();
                     } catch (e) {
                         alert(e.response?.data?.detail || 'Used in active trip');
+                    }
+                },
+                async saveTrip(trip) {
+                    try {
+                        await axios.patch(`/trips/${trip.id}`, {
+                            start_date: trip.start_date,
+                            end_date: trip.end_date
+                        });
+                        this.editingTrip = null;
+                        await this.fetchData();
+                        if (this.selectedTrip && this.selectedTrip.id === trip.id) {
+                            await this.viewTrip(this.selectedTrip);
+                        }
+                    } catch (e) {
+                        alert('Update failed');
                     }
                 },
                 async deleteTrip(tripId) {

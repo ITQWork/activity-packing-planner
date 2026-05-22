@@ -48,6 +48,12 @@ class TripBase(BaseModel):
 class TripCreate(TripBase):
     pass
 
+class TripUpdate(BaseModel):
+    destination: Optional[str] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
+    activity_id: Optional[int] = None
+
 class Trip(TripBase):
     id: int
     class Config:
