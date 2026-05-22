@@ -29,6 +29,8 @@ main.py                 # Application entry point
 - **Master Library**: Manage a global list of items with weights and categories.
 - **Dynamic Checklists**: Automatically generate a packing checklist for every new trip.
 - **Weight Tracking**: Monitor the total weight of your packed items.
+- **Travel Memories**: Archive completed trips in a dedicated "Memories" tab.
+- **Rating System**: Rate your past trips out of 5 stars and filter your history by rating.
 - **Weather Integration**: Get a weather forecast for your destination to help you pack effectively.
 - **PDF Export**: Export your final packing checklist as a PDF for easy access offline.
 

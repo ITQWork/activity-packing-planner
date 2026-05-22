@@ -44,6 +44,8 @@ class TripBase(BaseModel):
     end_date: date
     activity_id: int
     user_id: Optional[int] = None
+    is_completed: bool = False
+    rating: Optional[int] = None
 
 class TripCreate(TripBase):
     pass
@@ -53,6 +55,8 @@ class TripUpdate(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
     activity_id: Optional[int] = None
+    is_completed: Optional[bool] = None
+    rating: Optional[int] = None
 
 class Trip(TripBase):
     id: int

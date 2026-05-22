@@ -72,18 +72,23 @@ def seed():
         # 5. Trips
         today = date.today()
         trips_data = [
-            ("Drakensberg", "Alpine Hiking", today + timedelta(days=2), today + timedelta(days=5)),
-            ("Mauritius", "Beach Escape", today + timedelta(days=4), today + timedelta(days=11)),
-            ("St Andrews", "Golf Weekend", today + timedelta(days=15), today + timedelta(days=18)),
-            ("Tokyo", "City Tour", today + timedelta(days=45), today + timedelta(days=55)),
+            ("Drakensberg", "Alpine Hiking", today + timedelta(days=2), today + timedelta(days=5), False, None),
+            ("Mauritius", "Beach Escape", today + timedelta(days=4), today + timedelta(days=11), False, None),
+            ("St Andrews", "Golf Weekend", today + timedelta(days=15), today + timedelta(days=18), False, None),
+            ("Tokyo", "City Tour", today + timedelta(days=45), today + timedelta(days=55), False, None),
+            ("Swiss Alps", "Alpine Hiking", today - timedelta(days=60), today - timedelta(days=50), True, 5),
+            ("Bali", "Beach Escape", today - timedelta(days=30), today - timedelta(days=20), True, 4),
+            ("New York", "City Tour", today - timedelta(days=100), today - timedelta(days=90), True, 3),
         ]
-        for dest, act_name, start, end in trips_data:
+        for dest, act_name, start, end, completed, rating in trips_data:
             trip = Trip(
                 destination=dest,
                 activity_id=activity_objs[act_name].id,
                 user_id=user.id,
                 start_date=start,
-                end_date=end
+                end_date=end,
+                is_completed=completed,
+                rating=rating
             )
             session.add(trip)
             session.commit()

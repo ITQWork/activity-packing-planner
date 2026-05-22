@@ -38,6 +38,8 @@ class Trip(SQLModel, table=True):
     end_date: date
     activity_id: int = Field(foreign_key="activity.id")
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    is_completed: bool = Field(default=False)
+    rating: Optional[int] = Field(default=None, ge=1, le=5)
     
     user: Optional[User] = Relationship()
     activity: Activity = Relationship()

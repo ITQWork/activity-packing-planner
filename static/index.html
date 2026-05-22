@@ -17,7 +17,14 @@
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; filter: invert(0.8); }
+        input[type="date"]::-webkit-calendar-picker-indicator { 
+            cursor: pointer; 
+            filter: invert(0.8);
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
         .dark-card { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.05); }
         .sidebar-item-active { background: rgba(99, 102, 241, 0.1); color: #818cf8; border-right: 3px solid #6366f1; }
         .custom-scrollbar::-webkit-scrollbar { height: 6px; }
@@ -72,7 +79,7 @@
                 </div>
 
                 <nav class="flex-grow px-3 space-y-1">
-                    <button v-for="v in ['trips', 'activities', 'library', 'help']" 
+                    <button v-for="v in ['trips', 'activities', 'library', 'memories', 'help']" 
                             @click="view = v" 
                             :class="view === v ? 'sidebar-item-active' : 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'"
                             class="w-full p-4 rounded-2xl transition flex items-center space-x-4 font-bold capitalize group">
@@ -120,26 +127,29 @@
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                                <div class="space-y-2 md:col-span-5">
+                                <div class="space-y-2 md:col-span-4">
                                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] ml-1">Destination</label>
                                     <div class="relative">
                                         <i class="fa-solid fa-location-dot absolute left-4 top-1/2 -translate-y-1/2 text-slate-600"></i>
-                                        <input v-model="newTrip.destination" placeholder="Cape Town, Tokyo..." class="w-full bg-slate-800 border-none pl-11 pr-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white placeholder:text-slate-600">
+                                        <input v-model="newTrip.destination" placeholder="Cape Town, Tokyo..." class="w-full bg-slate-800 border-none pl-11 pr-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white placeholder:text-slate-600 text-sm">
                                     </div>
                                 </div>
                                 <div class="space-y-2 md:col-span-3">
                                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] ml-1">Activity</label>
-                                    <select v-model="newTrip.activity_id" class="w-full bg-slate-800 border-none px-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white appearance-none">
+                                    <select v-model="newTrip.activity_id" class="w-full bg-slate-800 border-none px-4 py-4 rounded-2xl focus:ring-4 focus:ring-indigo-500/20 outline-none transition font-semibold text-white appearance-none text-sm">
                                         <option value="">Select Category...</option>
                                         <option v-for="a in activities" :key="a.id" :value="a.id" class="bg-slate-800">{{ a.name }}</option>
                                     </select>
                                 </div>
-                                <div class="space-y-2 md:col-span-4">
+                                <div class="space-y-2 md:col-span-5">
                                     <label class="text-[10px] font-black text-slate-500 uppercase tracking-[0.1em] ml-1">Duration</label>
-                                    <div class="flex items-center space-x-2 bg-slate-800 rounded-2xl px-2">
-                                        <input type="date" v-model="newTrip.start_date" class="bg-transparent border-none py-4 px-2 outline-none text-[11px] font-black uppercase text-slate-300 grow">
-                                        <span class="text-slate-600 font-bold">→</span>
-                                        <input type="date" v-model="newTrip.end_date" class="bg-transparent border-none py-4 px-2 outline-none text-[11px] font-black uppercase text-slate-300 grow">
+                                    <div class="grid grid-cols-2 gap-2 bg-slate-800 rounded-2xl p-1">
+                                        <div class="relative">
+                                            <input type="date" v-model="newTrip.start_date" class="w-full bg-transparent border-none py-3 pl-8 outline-none text-[10px] font-black uppercase text-slate-300 cursor-pointer relative z-10">
+                                        </div>
+                                        <div class="relative">
+                                            <input type="date" v-model="newTrip.end_date" class="w-full bg-transparent border-none py-3 pl-8 outline-none text-[10px] font-black uppercase text-slate-300 cursor-pointer relative z-10">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -372,6 +382,56 @@
                         </div>
                     </section>
 
+                    <!-- Memories View -->
+                    <section v-if="view === 'memories'" class="space-y-8">
+                        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                            <div>
+                                <h2 class="text-3xl font-black tracking-tight text-white">Travel Memories</h2>
+                                <p class="text-slate-500 font-medium mt-1">Relive your past adventures and ratings.</p>
+                            </div>
+                            <div class="flex items-center space-x-4 bg-slate-800 p-2 rounded-2xl border border-white/5">
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">Filter by Rating:</span>
+                                <select v-model="ratingFilter" class="bg-transparent border-none px-4 py-1 outline-none font-bold text-sm text-white appearance-none cursor-pointer">
+                                    <option :value="0" class="bg-slate-800">All Ratings</option>
+                                    <option v-for="r in 5" :key="r" :value="r" class="bg-slate-800">{{ r }} Stars</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div v-if="completedTrips.length === 0" class="dark-card p-12 rounded-[3rem] text-center">
+                            <div class="w-20 h-20 rounded-full bg-slate-800 flex items-center justify-center text-slate-600 mx-auto mb-6">
+                                <i class="fa-solid fa-camera-retro text-3xl"></i>
+                            </div>
+                            <h3 class="text-xl font-black text-white mb-2">No memories yet</h3>
+                            <p class="text-slate-500 max-w-xs mx-auto">Complete a trip to see it appear here in your travel log.</p>
+                        </div>
+
+                        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div v-for="trip in filteredMemories" :key="trip.id" class="bg-slate-800/40 rounded-[2rem] border border-white/5 overflow-hidden hover:bg-slate-800 hover:border-indigo-500/30 transition-all duration-500 group">
+                                <div class="p-6">
+                                    <div class="flex justify-between items-start mb-4">
+                                        <div class="min-w-0">
+                                            <p class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">{{ getActivityName(trip.activity_id) }}</p>
+                                            <h3 class="font-black text-xl text-white truncate">{{ trip.destination }}</h3>
+                                        </div>
+                                        <div class="flex text-amber-400 space-x-0.5">
+                                            <i v-for="i in 5" :key="i" :class="i <= trip.rating ? 'fa-solid' : 'fa-regular'" class="fa-star text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="text-[10px] font-black text-slate-400 mb-6 bg-black/20 py-2 px-3 rounded-xl inline-block">
+                                        {{ formatDateRange(trip.start_date, trip.end_date) }}
+                                    </div>
+                                    <div class="flex items-center justify-between pt-4 border-t border-slate-800/50">
+                                        <span class="text-[10px] font-black text-slate-600 uppercase tracking-widest">Completed Adventure</span>
+                                        <button @click="viewTrip(trip)" class="text-[10px] font-black text-indigo-400 uppercase tracking-widest hover:text-indigo-300 transition">
+                                            Details <i class="fa-solid fa-arrow-right ml-1"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- Help View -->
                     <section v-if="view === 'help'" class="max-w-3xl mx-auto space-y-12 py-10">
                         <div class="text-center space-y-4">
@@ -401,6 +461,14 @@
                                 <div class="space-y-2">
                                     <h3 class="text-xl font-black text-white">Plan and Pack</h3>
                                     <p class="text-slate-500 leading-relaxed text-sm font-medium">Go to <b>Trips</b> to start planning. Selecting an activity automatically generates a checklist, including daily weather forecasts for your stay!</p>
+                                </div>
+                            </div>
+
+                            <div class="flex space-x-6">
+                                <div class="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black shrink-0 shadow-lg shadow-indigo-600/20">4</div>
+                                <div class="space-y-2">
+                                    <h3 class="text-xl font-black text-white">Capture Memories</h3>
+                                    <p class="text-slate-500 leading-relaxed text-sm font-medium">Once your trip is over, mark it as <b>Completed</b>. It will be moved to your <b>Memories</b> tab where you can rate it and keep a history of all your adventures.</p>
                                 </div>
                             </div>
                         </div>
@@ -464,6 +532,20 @@
                                 <button @click="downloadPDF(selectedTrip.id)" class="text-[10px] font-black text-indigo-400 hover:text-indigo-300 uppercase tracking-widest flex items-center bg-indigo-500/10 px-3 py-1 rounded-lg transition">
                                     <i class="fa-solid fa-file-pdf mr-2"></i>Export PDF
                                 </button>
+                                <button v-if="!selectedTrip.is_completed" @click="completeTrip(selectedTrip)" class="text-[10px] font-black text-emerald-400 hover:text-emerald-300 uppercase tracking-widest flex items-center bg-emerald-500/10 px-3 py-1 rounded-lg transition ml-auto">
+                                    <i class="fa-solid fa-circle-check mr-2"></i>Mark Completed
+                                </button>
+                            </div>
+
+                            <!-- Rating Selector -->
+                            <div v-if="selectedTrip.is_completed" class="mt-6 bg-black/30 p-6 rounded-[2rem] border border-white/5 max-w-sm">
+                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">How was your adventure?</p>
+                                <div class="flex items-center space-x-2">
+                                    <button v-for="r in 5" :key="r" @click="rateTrip(selectedTrip, r)" class="text-xl transition-transform hover:scale-125">
+                                        <i :class="r <= selectedTrip.rating ? 'fa-solid text-amber-400' : 'fa-regular text-slate-600'" class="fa-star"></i>
+                                    </button>
+                                    <span class="ml-4 text-xs font-black text-slate-400 uppercase tracking-widest">{{ selectedTrip.rating || 0 }}/5 Stars</span>
+                                </div>
                             </div>
                         </div>
                         <button @click="selectedTrip = null" class="bg-slate-800 w-12 h-12 rounded-2xl hover:bg-slate-700 transition flex items-center justify-center group">
@@ -569,12 +651,23 @@
                     newItem: { name: '', unit_weight: 0, category_id: '' },
                     newCategoryName: '',
                     newActivityName: '',
-                    activityLinks: {}
+                    activityLinks: {},
+                    ratingFilter: 0
                 }
             },
             computed: {
                 sortedTrips() {
                     return [...this.trips].sort((a, b) => new Date(b.start_date) - new Date(a.start_date));
+                },
+                activeTrips() {
+                    return this.sortedTrips.filter(t => !t.is_completed);
+                },
+                completedTrips() {
+                    return this.sortedTrips.filter(t => t.is_completed);
+                },
+                filteredMemories() {
+                    if (this.ratingFilter === 0) return this.completedTrips;
+                    return this.completedTrips.filter(t => t.rating === this.ratingFilter);
                 },
                 upcomingTrips() {
                     const now = new Date();
@@ -582,7 +675,7 @@
                     const nextWeek = new Date();
                     nextWeek.setDate(now.getDate() + 7);
                     
-                    return this.sortedTrips.filter(t => {
+                    return this.activeTrips.filter(t => {
                         const start = new Date(t.start_date);
                         return start >= now && start <= nextWeek;
                     });
@@ -593,7 +686,7 @@
                     const nextWeek = new Date();
                     nextWeek.setDate(now.getDate() + 7);
                     
-                    return this.sortedTrips.filter(t => new Date(t.start_date) > nextWeek);
+                    return this.activeTrips.filter(t => new Date(t.start_date) > nextWeek);
                 }
             },
             mounted() {
@@ -758,6 +851,21 @@
                         alert('Failed to generate PDF');
                     }
                 },
+                async completeTrip(trip) {
+                    if (!confirm('Mark this trip as completed and move to Memories?')) return;
+                    try {
+                        await axios.patch(`/trips/${trip.id}`, { is_completed: true, rating: 5 });
+                        await this.fetchData();
+                        if (this.selectedTrip) this.selectedTrip.is_completed = true;
+                    } catch (e) { alert('Failed to complete trip'); }
+                },
+                async rateTrip(trip, rating) {
+                    try {
+                        await axios.patch(`/trips/${trip.id}`, { rating });
+                        trip.rating = rating;
+                        await this.fetchData();
+                    } catch (e) { alert('Failed to save rating'); }
+                },
                 getCategoryName(id) {
                     return this.categories.find(c => c.id === id)?.name || 'Misc';
                 },
@@ -775,7 +883,7 @@
                     return `${s.toLocaleDateString('en-US', options)} - ${e.toLocaleDateString('en-US', options)}`;
                 },
                 getNavIcon(v) {
-                    return { trips: 'fa-solid fa-compass', activities: 'fa-solid fa-person-hiking', library: 'fa-solid fa-boxes-stacked', help: 'fa-solid fa-circle-info' }[v];
+                    return { trips: 'fa-solid fa-compass', activities: 'fa-solid fa-person-hiking', library: 'fa-solid fa-boxes-stacked', memories: 'fa-solid fa-camera-retro', help: 'fa-solid fa-circle-info' }[v];
                 }
             }
         }).mount('#app')
