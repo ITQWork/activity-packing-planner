@@ -39,11 +39,11 @@ def generate_pdf(trip: Trip, packed_items: List[TripPackedItem]):
             item_name = pi.item.name if pi.item else f"Item {pi.item_id}"
             weight = pi.item.unit_weight * pi.quantity if pi.item else 0
             total_weight += weight
-            pdf.cell(0, 10, f"{status} {pi.quantity}x {item_name} ({weight}g)", ln=True)
+            pdf.cell(0, 10, f"{status} {pi.quantity}x {item_name} ({weight/1000:.2f}kg)", ln=True)
         pdf.ln(2)
         
     pdf.ln(5)
     pdf.set_font("Arial", 'B', 12)
-    pdf.cell(0, 10, f"Total Estimated Weight: {total_weight}g", ln=True)
+    pdf.cell(0, 10, f"Total Estimated Weight: {total_weight/1000:.2f}kg", ln=True)
     
     return pdf.output()
