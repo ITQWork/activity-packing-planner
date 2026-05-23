@@ -48,7 +48,7 @@ EXCELLENT: Application meets almost all specifications.
 > - **`py`**: Use this on Windows if you have the Python Launcher installed (standard with Python from python.org). It automatically finds the latest installed version of Python.
 > - **`python`** or **`python3`**: Use these on Linux, macOS, or Windows if the Python Launcher is not installed or you have manually added Python to your PATH.
 
-### Getting Started
+### Quick Start Guide
 
 1. Clone the repository.
 2. Run the application:
@@ -73,6 +73,16 @@ To stop the running application and all associated processes:
 ```bash
 py tools/stop_site.py
 ```
+
+### Cleanup
+
+If you want to remove everything related to this repository from your computer, including installed packages and the project directory itself, run the following command from the root directory:
+
+```bash
+py tools/cleanup.py
+```
+
+*Note: This will attempt to uninstall packages listed in `plans/requirements.txt` and then delete the entire project folder.*
 
 ## Testing
 
@@ -104,16 +114,6 @@ Use the following credentials to log in and test the application:
 
 - **Username**: `admin`
 - **Password**: `password123`
-
-### Cleanup
-
-If you want to remove everything related to this repository from your computer, including installed packages and the project directory itself, run the following command from the root directory:
-
-```bash
-py tools/cleanup.py
-```
-
-*Note: This will attempt to uninstall packages listed in `plans/requirements.txt` and then delete the entire project folder.*
 
 ## Tech Stack
 
