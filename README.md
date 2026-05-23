@@ -2,7 +2,7 @@
 
 PackSmart is a web application designed to help you plan your trips by generating customized packing lists based on the activities you'll be doing.
 
-## Project Structure (Refactored)
+## Project Structure
 
 The project follows a modular structure suitable for business environments:
 
