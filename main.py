@@ -1,5 +1,47 @@
-import uvicorn
+import os
 import sys
+import subprocess
+
+def ensure_venv():
+    """Ensures the script is running within the local virtual environment, creating it if necessary."""
+    # Check if already in a venv
+    if hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix):
+        return
+
+    # Check for venv directory
+    venv_path = os.path.join(os.path.dirname(__file__), "venv")
+    
+    if not os.path.exists(venv_path):
+        print(f"--- Creating virtual environment in {venv_path}... ---")
+        subprocess.run([sys.executable, "-m", "venv", "venv"], check=True)
+        
+        # Determine pip path
+        if os.name == 'nt':
+            pip_exe = os.path.join(venv_path, "Scripts", "pip.exe")
+        else:
+            pip_exe = os.path.join(venv_path, "bin", "pip")
+            
+        print("--- Installing dependencies from requirements.txt... ---")
+        subprocess.run([pip_exe, "install", "-r", "requirements.txt"], check=True)
+
+    # Path to python executable in venv
+    if os.name == 'nt':  # Windows
+        python_exe = os.path.join(venv_path, "Scripts", "python.exe")
+    else:  # Unix/macOS
+        python_exe = os.path.join(venv_path, "bin", "python")
+
+    if os.path.exists(python_exe):
+        print(f"--- Relaunching using virtual environment at {venv_path} ---")
+        # Re-execute the script using the venv's python
+        os.execv(python_exe, [python_exe] + sys.argv)
+    else:
+        print("--- Warning: Virtual environment 'venv' found but python executable missing. ---")
+
+# Run venv check before importing any dependencies
+if __name__ == "__main__":
+    ensure_venv()
+
+import uvicorn
 from sqlmodel import Session, SQLModel
 from app.main import app
 from app.db.session import engine

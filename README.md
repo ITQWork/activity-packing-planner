@@ -48,19 +48,11 @@ main.py                 # Application entry point
 ### Getting Started
 
 1. Clone the repository.
-2. Create and activate a virtual environment:
-   ```bash
-   py -m venv venv
-   venv\Scripts\activate
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Seed the database and run the application:
+2. Run the application:
    ```bash
    py main.py --seed
    ```
+   *Note: `main.py` will automatically create a virtual environment (`venv`) and install all necessary dependencies from `requirements.txt` on the first run. Subsequent runs will use the existing environment.*
 
 The application will be available at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 API Documentation (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
