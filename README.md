@@ -91,6 +91,13 @@ To start the app without re-seeding:
 py main.py
 ```
 
+### Stopping the Application
+
+To stop the running application and all associated processes:
+```bash
+py tools/stop_site.py
+```
+
 ## Testing
 
 The project uses `pytest` for unit testing. The tests are located in the `tests/` directory and cover API endpoints, business logic (services), and data models.
