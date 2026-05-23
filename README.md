@@ -45,32 +45,32 @@ main.py                 # Application entry point
 > - **`py`**: Use this on Windows if you have the Python Launcher installed (standard with Python from python.org). It automatically finds the latest installed version of Python.
 > - **`python`** or **`python3`**: Use these on Linux, macOS, or Windows if the Python Launcher is not installed or you have manually added Python to your PATH.
 
-### Installation
+### Getting Started
 
-1. Clone the repository to your local machine.
-2. Install the required Python packages:
+1. Clone the repository.
+2. Create and activate a virtual environment:
+   ```bash
+   py -m venv venv
+   venv\Scripts\activate
+   ```
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. Initialize the database and seed it with initial data:
+4. Seed the database and run the application:
    ```bash
-   py seed.py  # Windows
-   # OR
-   python seed.py  # Linux/macOS
+   py main.py --seed
    ```
-
-### Running the App
-
-Start the backend server:
-```bash
-py main.py  # Windows
-# OR
-python main.py  # Linux/macOS
-```
 
 The application will be available at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 API Documentation (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
+### Subsequent Runs
+
+To start the app without re-seeding:
+```bash
+py main.py
+```
 ### Test Account
 
 Use the following credentials to log in and test the application:
