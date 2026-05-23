@@ -82,16 +82,6 @@ To execute all tests, run the following command from the root directory:
 py -m pytest
 ```
 
-### Cleanup
-
-If you want to remove everything related to this repository from your computer, including installed packages and the project directory itself, run the following command from the root directory:
-
-```bash
-py tools/cleanup.py
-```
-
-*Note: This will attempt to uninstall packages listed in `requirements.txt` and then delete the entire project folder.*
-
 ### Test Coverage
 
 - **API Endpoints**: CRUD operations for activities, categories, items, and trips.
@@ -104,6 +94,16 @@ Use the following credentials to log in and test the application:
 
 - **Username**: `admin`
 - **Password**: `password123`
+
+### Cleanup
+
+If you want to remove everything related to this repository from your computer, including installed packages and the project directory itself, run the following command from the root directory:
+
+```bash
+py tools/cleanup.py
+```
+
+*Note: This will attempt to uninstall packages listed in `requirements.txt` and then delete the entire project folder.*
 
 ## Tech Stack
 
