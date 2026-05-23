@@ -21,8 +21,8 @@ def ensure_venv():
         else:
             pip_exe = os.path.join(venv_path, "bin", "pip")
             
-        print("--- Installing dependencies from requirements.txt... ---")
-        subprocess.run([pip_exe, "install", "-r", "requirements.txt"], check=True)
+        print("--- Installing dependencies from plans/requirements.txt... ---")
+        subprocess.run([pip_exe, "install", "-r", "plans/requirements.txt"], check=True)
 
     # Path to python executable in venv
     if os.name == 'nt':  # Windows

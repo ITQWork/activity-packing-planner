@@ -3,7 +3,7 @@ import sys
 
 def score_application():
     """
-    Scores the application based on the high-level specifications in specifications.txt
+    Scores the application based on the high-level specifications in plans/specifications.txt
     """
     scores = {
         "Activity-based lists": {

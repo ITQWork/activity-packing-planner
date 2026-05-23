@@ -66,7 +66,7 @@ main.py                 # Application entry point
 ### Prerequisites
 
 - Python 3.7+
-- All dependencies listed in `requirements.txt`
+- All dependencies listed in `plans/requirements.txt`
 
 > **Note on Terminal Commands:**
 > - **`py`**: Use this on Windows if you have the Python Launcher installed (standard with Python from python.org). It automatically finds the latest installed version of Python.
@@ -79,7 +79,7 @@ main.py                 # Application entry point
    ```bash
    py main.py --seed
    ```
-   *Note: `main.py` will automatically create a virtual environment (`venv`) and install all necessary dependencies from `requirements.txt` on the first run. Subsequent runs will use the existing environment.*
+   *Note: `main.py` will automatically create a virtual environment (`venv`) and install all necessary dependencies from `plans/requirements.txt` on the first run. Subsequent runs will use the existing environment.*
 
 The application will be available at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 API Documentation (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
@@ -130,7 +130,7 @@ If you want to remove everything related to this repository from your computer, 
 py tools/cleanup.py
 ```
 
-*Note: This will attempt to uninstall packages listed in `requirements.txt` and then delete the entire project folder.*
+*Note: This will attempt to uninstall packages listed in `plans/requirements.txt` and then delete the entire project folder.*
 
 ## Tech Stack
 

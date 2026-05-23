@@ -6,7 +6,7 @@ from pathlib import Path
 
 def remove_packages(dry_run=False):
     print("Removing installed packages...")
-    req_file = Path(__file__).parent.parent / "requirements.txt"
+    req_file = Path(__file__).parent.parent / "plans" / "requirements.txt"
     if req_file.exists():
         if dry_run:
             print(f"[DRY RUN] Would run: {sys.executable} -m pip uninstall -r {req_file} -y")
@@ -14,11 +14,11 @@ def remove_packages(dry_run=False):
         try:
             # Try to uninstall packages listed in requirements.txt
             subprocess.run([sys.executable, "-m", "pip", "uninstall", "-r", str(req_file), "-y"], check=True)
-            print("Successfully uninstalled packages from requirements.txt")
+            print("Successfully uninstalled packages from plans/requirements.txt")
         except subprocess.CalledProcessError as e:
             print(f"Error uninstalling packages: {e}")
     else:
-        print("requirements.txt not found. Skipping package removal.")
+        print("plans/requirements.txt not found. Skipping package removal.")
 
 def remove_repository(dry_run=False):
     repo_path = Path(__file__).parent.parent.resolve()
