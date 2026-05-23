@@ -24,11 +24,6 @@ TOTAL SCORE                    | 93    / 100   | 93.0%
 EXCELLENT: Application meets almost all specifications.
 ```
 
-To re-run the evaluation:
-```bash
-py tools/score_app.py
-```
-
 ## Project Structure
 
 The project follows a modular structure suitable for business environments:
