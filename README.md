@@ -2,6 +2,19 @@
 
 PackSmart is a web application designed to help you plan your trips by generating customized packing lists based on the activities you'll be doing.
 
+## Features
+
+- **User Authentication**: Secure your packing plans with a personal account.
+- **Trip Planning**: Create trips by specifying a destination, start date, and activity.
+- **Activity Templates**: Define reusable activity templates (e.g., Hiking, Golfing) with associated items.
+- **Master Library**: Manage a global list of items with weights and categories.
+- **Dynamic Checklists**: Automatically generate a packing checklist for every new trip.
+- **Weight Tracking**: Monitor the total weight of your packed items.
+- **Travel Memories**: Archive completed trips in a dedicated "Memories" tab.
+- **Rating System**: Rate your past trips out of 5 stars and filter your history by rating.
+- **Weather Integration**: Get a weather forecast for your destination to help you pack effectively.
+- **PDF Export**: Export your final packing checklist as a PDF for easy access offline.
+
 ## Decrypted Challenge Score
 
 The application has been evaluated against the original challenge specifications:
@@ -23,38 +36,6 @@ TOTAL SCORE                    | 93    / 100   | 93.0%
 ============================================================
 EXCELLENT: Application meets almost all specifications.
 ```
-
-## Project Structure
-
-The project follows a modular structure suitable for business environments:
-
-```text
-app/
-├── api/                # API layer (v1 endpoints)
-│   ├── deps.py         # Dependencies (get_db, etc.)
-│   └── v1/
-│       ├── api.py      # Main router inclusion
-│       └── endpoints/  # Categorized routes (trips, activities, etc.)
-├── core/               # App configuration (Pydantic Settings)
-├── db/                 # Database connection and session management
-├── models/             # SQLModel DB Models
-├── schemas/            # Pydantic Schemas for validation and documentation
-└── services/           # Business logic (PDF, Weather, Packing Logic)
-main.py                 # Application entry point
-```
-
-## Features
-
-- **User Authentication**: Secure your packing plans with a personal account.
-- **Trip Planning**: Create trips by specifying a destination, start date, and activity.
-- **Activity Templates**: Define reusable activity templates (e.g., Hiking, Golfing) with associated items.
-- **Master Library**: Manage a global list of items with weights and categories.
-- **Dynamic Checklists**: Automatically generate a packing checklist for every new trip.
-- **Weight Tracking**: Monitor the total weight of your packed items.
-- **Travel Memories**: Archive completed trips in a dedicated "Memories" tab.
-- **Rating System**: Rate your past trips out of 5 stars and filter your history by rating.
-- **Weather Integration**: Get a weather forecast for your destination to help you pack effectively.
-- **PDF Export**: Export your final packing checklist as a PDF for easy access offline.
 
 ## Getting Started
 
@@ -141,6 +122,25 @@ py tools/cleanup.py
 - **Frontend**: Vue.js 3 (located in `static/`)
 - **Services**: Custom Weather Service, PDF Generation Service (fpdf2)
 - **Configuration**: Pydantic Settings
+
+## Project Structure
+
+The project follows a modular structure suitable for business environments:
+
+```text
+app/
+├── api/                # API layer (v1 endpoints)
+│   ├── deps.py         # Dependencies (get_db, etc.)
+│   └── v1/
+│       ├── api.py      # Main router inclusion
+│       └── endpoints/  # Categorized routes (trips, activities, etc.)
+├── core/               # App configuration (Pydantic Settings)
+├── db/                 # Database connection and session management
+├── models/             # SQLModel DB Models
+├── schemas/            # Pydantic Schemas for validation and documentation
+└── services/           # Business logic (PDF, Weather, Packing Logic)
+main.py                 # Application entry point
+```
 
 ## System Architecture
 
