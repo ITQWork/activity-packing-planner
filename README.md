@@ -63,6 +63,31 @@ To start the app without re-seeding:
 ```bash
 py main.py
 ```
+
+## Testing
+
+The project uses `pytest` for unit testing. The tests are located in the `tests/` directory and cover API endpoints, business logic (services), and data models.
+
+### Prerequisites for Testing
+
+You need to have `pytest` and `httpx` installed:
+```bash
+py -m pip install pytest httpx
+```
+
+### Running Tests
+
+To execute all tests, run the following command from the root directory:
+```bash
+py -m pytest
+```
+
+### Test Coverage
+
+- **API Endpoints**: CRUD operations for activities, categories, items, and trips.
+- **Business Logic**: Trip duration calculation, packing list generation, and weight calculations.
+- **Models & Schemas**: Data integrity and validation.
+
 ### Test Account
 
 Use the following credentials to log in and test the application:
