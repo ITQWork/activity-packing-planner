@@ -667,10 +667,10 @@
                                 <div class="grid grid-cols-1 gap-2">
                                     <div v-for="item in tripItems" :key="item.id" 
                                          class="flex items-center space-x-4 p-5 rounded-3xl transition-all duration-300 cursor-pointer"
-                                         :class="item.is_packed ? 'bg-indigo-500/10' : 'bg-slate-800 border border-white/5 shadow-sm hover:border-indigo-500/30'"
+                                         :class="item.is_packed ? 'bg-indigo-500/20' : 'bg-indigo-500/5 border border-white/5 shadow-sm hover:border-indigo-500/30'"
                                          @click="item.is_packed = !item.is_packed; togglePacked(item)">
                                         <div class="w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300"
-                                             :class="item.is_packed ? 'bg-indigo-600 border-indigo-600 scale-90' : 'border-slate-700 bg-slate-900 group-hover:border-indigo-500'">
+                                             :class="item.is_packed ? 'bg-indigo-600 border-indigo-600 scale-90' : 'border-indigo-500/20 bg-black/20 group-hover:border-indigo-500'">
                                             <i v-if="item.is_packed" class="fa-solid fa-check text-white text-[10px]"></i>
                                         </div>
                                         <div class="flex-grow min-w-0">
@@ -695,7 +695,7 @@
                                     <h4 class="text-3xl font-black text-white">{{ (tripWeight / 1000).toFixed(2) }}<span class="text-sm ml-1 font-bold opacity-30 uppercase">kg</span></h4>
                                     <div class="mt-8 space-y-2">
                                         <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
-                                            <div class="h-full bg-indigo-500 rounded-full shadow-[0_0_10px_rgba(99,102,241,0.5)]" :style="{width: Math.min((tripWeight/15000)*100, 100) + '%'}"></div>
+                                            <div class="h-full bg-indigo-500 rounded-full" :style="{width: Math.min((tripWeight/15000)*100, 100) + '%', boxShadow: '0 0 10px rgb(var(--p-500) / 0.5)'}"></div>
                                         </div>
                                         <p class="text-[9px] font-black text-slate-700 uppercase text-right">Max Recommended 15kg</p>
                                     </div>
