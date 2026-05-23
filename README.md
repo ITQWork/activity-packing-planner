@@ -71,6 +71,13 @@ python main.py  # Linux/macOS
 The application will be available at: [http://127.0.0.1:8000](http://127.0.0.1:8000)
 API Documentation (Swagger UI): [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 
+### Test Account
+
+Use the following credentials to log in and test the application:
+
+- **Username**: `admin`
+- **Password**: `password123`
+
 ## Tech Stack
 
 - **Backend**: FastAPI (Python), SQLModel (SQLAlchemy + Pydantic)
